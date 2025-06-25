@@ -24,14 +24,14 @@ app.add_middleware(
 # === CONFIG UPLOAD FICHIERS ===
 UPLOAD_DIR = os.path.abspath("uploaded_files")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
-BASE_URL = os.getenv("BASE_URL", "https://tracksys-backend.onrender.com")
+BASE_URL = os.getenv("BASE_URL", "postgresql://postgre:kSdrZm4De8otlWEQTPGe76EyAweHieoN@dpg-d1e12ofdiees73c2sfu0-a/tracksys_bd")
 
 # === CONFIGURATION DE LA BASE POSTGRESQL ===
 DB_CONFIG = {
-    "host": "tracksys_bd.render.com",  # Remplace par ton host réel Render
+    "host": "dpg-d1e12ofdiees73c2sfu0-a",  # Remplace par ton host réel Render
     "dbname": "tracksys_bd",
-    "user": "postgres",
-    "password": "Boucledor",  # Remplace avec précaution
+    "user": "postgre",
+    "password": "kSdrZm4De8otlWEQTPGe76EyAweHieoN",  # Remplace avec précaution
     "port": 5432
 }
 
