@@ -14,7 +14,7 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 BASE_URL = os.getenv("BASE_URL", "http://localhost:8000")
 
 DB_CONFIG = {
-    "host": "localhost",
+    "host": "https://tracksys-backend.onrender.com",
     "dbname": "tracksys_bd",
     "user": "postgres",
     "password": "Boucledor",
